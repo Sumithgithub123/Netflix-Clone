@@ -3,10 +3,12 @@ import './rowpost.css'
 import axiosinstance from '../axios'
 import {API_KEY, imageurl} from '../../constants/constants'
 import YouTube from 'react-youtube'
+import Error from '../Error'
 
 function Rowpost(props) {
   const [movies,setMovies] = useState([])
-  const [urlid,seturlid] = useState([])
+  const [urlid,seturlid] = useState()
+  const [err,seterr] = useState(false)
   useEffect(()=>{
   axiosinstance.get(props.url).then((response)=>{
      //console.log(response.data)
@@ -23,10 +25,14 @@ function Rowpost(props) {
   const handlemovie = (id)=>{
      axiosinstance.get(`movie/${id}/videos?api_key=${API_KEY}&language=en-US`).then((response)=>{
        if(response.data.results.length!==0){
+            seterr(false)
             seturlid(response.data.results[0])
        }else{
-        console.log('not')
+        seturlid(false)
        }
+     }).catch((err)=>{
+      seterr(true)
+      console.error(err);
      })
   }
   return (
@@ -41,7 +47,8 @@ function Rowpost(props) {
         })
       }
       </div>
-     { urlid &&  <YouTube opts={opts} videoId={urlid.key}/> }
+     { urlid && err===false &&  <YouTube opts={opts} videoId={urlid.key}/> }
+     { urlid===false || err === true ? <Error />:''}
     </div>
   )
 }
